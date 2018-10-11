@@ -13,7 +13,6 @@ import es.ujaen.dae.practicaeventos.cliente.ClienteOrganizadoraEventos;
 @ComponentScan("es.ujaen.dae.practicaeventos.bean")
 @SpringBootApplication
 public class ServidorOrganizadoraEventos {
-
 	public static void main(String[] args) {
 		SpringApplication servidor = new SpringApplication(ServidorOrganizadoraEventos.class);
 		ApplicationContext ctx = servidor.run(args);

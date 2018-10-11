@@ -1,23 +1,31 @@
 package es.ujaen.dae.practicaeventos.modelo;
 
+import java.util.Map;
+import java.util.Queue;
+import java.util.TreeMap;
+
 //Bean o POJO
 public class Usuario {
 	String dni;
 	String nombre;
 	String correo;
 	String telefono;
-	String nickname;
 	String password;
 	
-	public Usuario() {}
+	Map<Integer,Evento> eventosOrganizados;
+	Map<Integer,Evento> eventosEspera;
+	Map<Integer, Evento> eventosInvitado;
+	
+	public Usuario() {
+		
+	}
 
-	public Usuario(String dni, String nombre, String correo, String telefono, String nickname, String password) {
+	public Usuario(String dni, String nombre, String correo, String telefono, String password) {
 		super();
 		this.dni = dni;
 		this.nombre = nombre;
 		this.correo = correo;
 		this.telefono = telefono;
-		this.nickname = nickname;
 		this.password = password;
 	}
 
@@ -53,14 +61,6 @@ public class Usuario {
 		this.telefono = telefono;
 	}
 
-	public String getNickname() {
-		return nickname;
-	}
-
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
-	}
-
 	public String getPassword() {
 		return password;
 	}
@@ -72,9 +72,8 @@ public class Usuario {
 	@Override
 	public String toString() {
 		return "Usuario [dni=" + dni + ", nombre=" + nombre + ", correo=" + correo + ", telefono=" + telefono
-				+ ", nickname=" + nickname + "]";
+				+ ", password=" + password + ", eventosOrganizados=" + eventosOrganizados + ", eventosEspera="
+				+ eventosEspera + ", eventosInvitado=" + eventosInvitado + "]";
 	}
-	
-	
 	
 }

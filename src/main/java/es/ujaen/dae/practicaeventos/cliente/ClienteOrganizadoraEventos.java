@@ -30,11 +30,20 @@ public class ClienteOrganizadoraEventos {
 		opcion = sc.nextInt();
 		
 		if(opcion==1){
-			Usuario usuario = new Usuario("1323123211Q","Juan Perez","jhony@gmail.com","+521551591058","jhony32","sadafe32");
+			String dni = "13231232Q";
+			String password = "sadafe32";
+			long token; 
+			Usuario usuario = new Usuario(dni,"Juan Perez","jhony@gmail.com","+521551591058",password);
 			organizadoraEventos.registrarUsuario(usuario);
+			token = organizadoraEventos.identificarUsuario(dni, password);
+			System.out.println("TOKEN: "+token);
+			//token = 2556556;
+			Evento evento = new Evento("Evento de prueba", "Descripción de este evento", "España", "10-05-2018", "Fiesta infantil", 20);
+			organizadoraEventos.crearEvento(evento, token);
 		}
 		
 		organizadoraEventos.obtenerUsuarios();
+		organizadoraEventos.obtenerEventos();
 		
 		//System.out.println("Organizadora:"+organizadoraEventos.getCif());
 		//Logica y llamada de metodos

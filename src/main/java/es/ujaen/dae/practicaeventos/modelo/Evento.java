@@ -1,5 +1,6 @@
 package es.ujaen.dae.practicaeventos.modelo;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -11,29 +12,34 @@ public class Evento {
 	String fecha;
 	String tipo;
 	int cupo;
+	
 	Usuario organizador;
-	Queue<Usuario> listaEspera;
-	Map<Integer, Usuario> listaInvitados;
+	List<Usuario> listaEspera;
+	Map<String, Usuario> listaInvitados;
 	
-	public Evento() {}
+	public Evento() {
+		
+	}
 	
-	public Evento(int id, String nombre, String descripcion, String lugar, String fecha, String tipo, int cupo,
-			Usuario organizador, Queue<Usuario> listaEspera, Map<Integer, Usuario> listaInvitados) {
-		super();
-		this.id = id;
+	public Evento(String nombre, String descripcion, String lugar, String fecha, String tipo, int cupo) {
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.lugar = lugar;
 		this.fecha = fecha;
 		this.tipo = tipo;
 		this.cupo = cupo;
-		this.organizador = organizador;
-		this.listaEspera = listaEspera;
-		this.listaInvitados = listaInvitados;
 	}
 
 	public int getId() {
 		return id;
+	}
+	
+	public Usuario getOrganizador() {
+		return organizador;
+	}
+
+	public void setOrganizador(Usuario organizador) {
+		this.organizador = organizador;
 	}
 
 	public void setId(int id) {
@@ -78,5 +84,14 @@ public class Evento {
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
 	}
+
+	@Override
+	public String toString() {
+		return "Evento [id=" + id + ", nombre=" + nombre + ", descripcion=" + descripcion + ", lugar=" + lugar
+				+ ", fecha=" + fecha + ", tipo=" + tipo + ", cupo=" + cupo + ", organizador=" + organizador
+				+ ", listaEspera=" + listaEspera + ", listaInvitados=" + listaInvitados + "]";
+	}
+	
+	
 	
 }
