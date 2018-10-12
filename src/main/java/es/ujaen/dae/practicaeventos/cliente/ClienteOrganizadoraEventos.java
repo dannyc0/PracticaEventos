@@ -5,7 +5,8 @@ import java.util.Scanner;
 import org.springframework.context.ApplicationContext;
 
 import es.ujaen.dae.practicaeventos.bean.OrganizadoraEventosImp;
-import es.ujaen.dae.practicaeventos.modelo.Evento;
+import es.ujaen.dae.practicaeventos.dto.EventoDTO;
+import es.ujaen.dae.practicaeventos.dto.UsuarioDTO;
 import es.ujaen.dae.practicaeventos.modelo.Usuario;
 import es.ujaen.dae.practicaeventos.servicio.OrganizadoraEventosService;
 
@@ -33,12 +34,11 @@ public class ClienteOrganizadoraEventos {
 			String dni = "13231232Q";
 			String password = "sadafe32";
 			long token; 
-			Usuario usuario = new Usuario(dni,"Juan Perez","jhony@gmail.com","+521551591058",password);
+			UsuarioDTO usuario = new UsuarioDTO(dni,"Juan Perez",password,"jhony@gmail.com","+521551591058");
 			organizadoraEventos.registrarUsuario(usuario);
 			token = organizadoraEventos.identificarUsuario(dni, password);
 			System.out.println("TOKEN: "+token);
-			//token = 2556556;
-			Evento evento = new Evento("Evento de prueba", "Descripción de este evento", "España", "10-05-2018", "Fiesta infantil", 20);
+			EventoDTO evento = new EventoDTO("Evento de prueba", "Descripción de este evento", "España", "10-05-2018", "Fiesta infantil", 20);
 			organizadoraEventos.crearEvento(evento, token);
 		}
 		

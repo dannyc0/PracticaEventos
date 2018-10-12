@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import es.ujaen.dae.practicaeventos.modelo.Evento;
-import es.ujaen.dae.practicaeventos.modelo.Usuario;
+import es.ujaen.dae.practicaeventos.dto.EventoDTO;
+import es.ujaen.dae.practicaeventos.dto.UsuarioDTO;
 
 public interface OrganizadoraEventosService {
 	
@@ -14,10 +14,10 @@ public interface OrganizadoraEventosService {
 	public void obtenerEventos();
 	
 	/////////////////////////
-	public void registrarUsuario(Usuario usuario);
+	public String registrarUsuario(UsuarioDTO usuarioDTO);
 	public long identificarUsuario(String dni, String password);
-	public void crearEvento(Evento evento, long token);
-	public List<Evento> buscarEvento(String attr);
+	public String crearEvento(EventoDTO eventoDTO, long token);
+	public List<EventoDTO> buscarEvento(String attr);
 	public void cancelarEvento(String id,long token);
 	//public void inscribirAEvento(String id,long token);
 }

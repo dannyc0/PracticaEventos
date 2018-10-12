@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import es.ujaen.dae.practicaeventos.dto.EventoDTO;
+import es.ujaen.dae.practicaeventos.dto.UsuarioDTO;
 import es.ujaen.dae.practicaeventos.modelo.Evento;
 import es.ujaen.dae.practicaeventos.modelo.Usuario;
 import es.ujaen.dae.practicaeventos.servicio.OrganizadoraEventosService;
@@ -21,14 +23,14 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 	boolean isLogeado;
 	long token;
 	
-	Hashtable<Long, String> usuariosActivos;
+	Hashtable<Long, String> usuariosTokens;
 	Map<String, Usuario> usuarios;
 	Map<Integer, Evento> eventos;
 	
 	public OrganizadoraEventosImp() {
 		usuarios = new TreeMap<>();
 		eventos = new TreeMap<>();
-		usuariosActivos = new Hashtable<>();
+		usuariosTokens = new Hashtable<>();
 	}
 	
 	public OrganizadoraEventosImp(String cif, String nombre, Map<String, Usuario> usuarios, Map<Integer, Evento> eventos) {
@@ -54,36 +56,57 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		this.nombre = nombre;
 	}
 	
-	public void registrarUsuario(Usuario usuario) {
-		usuarios.put(usuario.getDni(), usuario);
+	public String registrarUsuario(UsuarioDTO usuarioDTO) {
+		String mensaje = "";
+		Usuario usuario = usuarioDTO.toEntity();
+		if(usuario.getDni()!=null&&usuario.getPassword()!=null&&usuario.getNombre()!=null) {
+			mensaje = "Usuario registrado";
+			usuarios.put(usuario.getDni(), usuario);
+		}else
+			mensaje = "No se ha registrado el usuario. El DNI, nombre y password son campos obligatorios.";
+		return mensaje;
 	}
 	
 	public long identificarUsuario(String dni, String password) {
 		Usuario usuario;
-		if(usuarios.containsKey(dni)) {
-			usuario = usuarios.get(dni);
-			if ( usuario.getPassword() == password) {
-				 token = generarToken();
-				 usuariosActivos.put(token, dni);
-				 return token;
+		long respuesta = 0;
+		if(dni!=null&&password!=null) {
+			if(usuarios.containsKey(dni)) {
+				usuario = usuarios.get(dni);
+				if ( usuario.getPassword() == password) {
+					 token = generarToken();
+					 respuesta = token;
+					 usuariosTokens.put(token, dni);
+				}else {
+					respuesta = 2; //contraseña incorrecta
+				}
+			}else {
+				respuesta = 1; //no registrado
 			}
-		}
-		return 0;
+		}else {
+			respuesta = 0;//no ingreso datos
+		}return respuesta;
 	}
 	
-	public void crearEvento(Evento evento, long token) {
+	public String crearEvento(EventoDTO eventoDTO, long token) {
+		Evento evento = eventoDTO.toEntity();
+		String mensaje = "";
 		if(validarToken(token)) {
-			evento.setOrganizador(usuarios.get(usuariosActivos.get(token)));
+			evento.setOrganizador(usuarios.get(usuariosTokens.get(token)));
 			eventos.put(evento.getId(), evento);
+			mensaje = "Evento creado";
+		}else {
+			mensaje = "Debe iniciar sesión";
 		}
+		return mensaje;
 	}
 	
-	public List<Evento> buscarEvento(String attr) {
-		ArrayList<Evento> eventosBuscados = new ArrayList<>();
+	public List<EventoDTO> buscarEvento(String attr) {
+		ArrayList<EventoDTO> eventosBuscados = new ArrayList<>();
 		
 		for(Evento evento : eventos.values()) {
 			if(evento.getTipo().toLowerCase().equals(attr)||evento.getDescripcion().toLowerCase().contains(attr.toLowerCase()))
-				eventosBuscados.add(evento);
+				eventosBuscados.add(new EventoDTO(evento));
 		}return eventosBuscados;
 	}
 	
@@ -114,7 +137,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 	}
 
 	private boolean validarToken(long token) {
-		if(usuariosActivos.containsKey(token))
+		if(usuariosTokens.containsKey(token))
 			return true;
 		return false;
 	}

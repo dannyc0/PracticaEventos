@@ -21,13 +21,14 @@ public class Evento {
 		
 	}
 	
-	public Evento(String nombre, String descripcion, String lugar, String fecha, String tipo, int cupo) {
+	public Evento(String nombre, String descripcion, String lugar, String fecha, String tipo, int cupo,Usuario organizador) {
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.lugar = lugar;
 		this.fecha = fecha;
 		this.tipo = tipo;
 		this.cupo = cupo;
+		this.organizador = organizador;
 	}
 
 	public int getId() {
@@ -91,7 +92,5 @@ public class Evento {
 				+ ", fecha=" + fecha + ", tipo=" + tipo + ", cupo=" + cupo + ", organizador=" + organizador
 				+ ", listaEspera=" + listaEspera + ", listaInvitados=" + listaInvitados + "]";
 	}
-	
-	
 	
 }

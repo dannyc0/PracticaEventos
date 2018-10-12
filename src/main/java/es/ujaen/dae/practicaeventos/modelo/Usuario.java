@@ -21,7 +21,6 @@ public class Usuario {
 	}
 
 	public Usuario(String dni, String nombre, String correo, String telefono, String password) {
-		super();
 		this.dni = dni;
 		this.nombre = nombre;
 		this.correo = correo;
