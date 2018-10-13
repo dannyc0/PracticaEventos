@@ -12,12 +12,14 @@ public class Usuario {
 	String telefono;
 	String password;
 	
-	Map<Integer,Evento> eventosOrganizados;
-	Map<Integer,Evento> eventosEspera;
-	Map<Integer, Evento> eventosInvitado;
+	public Map<Integer,Evento> eventosOrganizados;
+	public Map<Integer,Evento> eventosEspera;
+	public Map<Integer, Evento> eventosInvitado;
 	
 	public Usuario() {
-		
+		eventosOrganizados=new TreeMap<>();
+		eventosEspera=new TreeMap<>();
+		eventosInvitado=new TreeMap<>();
 	}
 
 	public Usuario(String dni, String nombre, String correo, String telefono, String password) {
@@ -26,6 +28,10 @@ public class Usuario {
 		this.correo = correo;
 		this.telefono = telefono;
 		this.password = password;
+		eventosOrganizados=new TreeMap<>();
+		eventosEspera=new TreeMap<>();
+		eventosInvitado=new TreeMap<>();
+		
 	}
 
 	public String getDni() {
@@ -74,5 +80,6 @@ public class Usuario {
 				+ ", password=" + password + ", eventosOrganizados=" + eventosOrganizados + ", eventosEspera="
 				+ eventosEspera + ", eventosInvitado=" + eventosInvitado + "]";
 	}
+	
 	
 }

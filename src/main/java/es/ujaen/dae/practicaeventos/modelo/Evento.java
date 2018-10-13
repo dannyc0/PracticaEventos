@@ -1,8 +1,12 @@
 package es.ujaen.dae.practicaeventos.modelo;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.TreeMap;
 
 public class Evento {
 	int id;
@@ -13,12 +17,13 @@ public class Evento {
 	String tipo;
 	int cupo;
 	
-	Usuario organizador;
-	List<Usuario> listaEspera;
-	Map<String, Usuario> listaInvitados;
+	public Usuario organizador;
+	public List<Usuario> listaEspera;
+	public Map<String, Usuario> listaInvitados;
 	
 	public Evento() {
-		
+		listaEspera = new ArrayList<>();
+		listaInvitados = new TreeMap<>();
 	}
 	
 	public Evento(String nombre, String descripcion, String lugar, String fecha, String tipo, int cupo,Usuario organizador) {
@@ -29,6 +34,8 @@ public class Evento {
 		this.tipo = tipo;
 		this.cupo = cupo;
 		this.organizador = organizador;
+		listaEspera = new ArrayList<>();
+		listaInvitados = new TreeMap<>();
 	}
 
 	public int getId() {
@@ -86,11 +93,29 @@ public class Evento {
 		this.descripcion = descripcion;
 	}
 
+	
+
 	@Override
 	public String toString() {
 		return "Evento [id=" + id + ", nombre=" + nombre + ", descripcion=" + descripcion + ", lugar=" + lugar
 				+ ", fecha=" + fecha + ", tipo=" + tipo + ", cupo=" + cupo + ", organizador=" + organizador
 				+ ", listaEspera=" + listaEspera + ", listaInvitados=" + listaInvitados + "]";
 	}
-	
+
+	public boolean validarFecha() {
+	    LocalDate hoy = LocalDate.now();
+	    String[] fechaEvento = getFecha().split("-");
+	    String format = hoy +"";
+	    String fechaActual[]=format.split("-");
+	    if(Integer.parseInt(fechaEvento[0])<Integer.parseInt(fechaActual[2])) {
+		    if(Integer.parseInt(fechaEvento[1])<Integer.parseInt(fechaActual[1])) {
+			    if(Integer.parseInt(fechaEvento[2])<Integer.parseInt(fechaActual[0])) {
+			    	return true;			    	
+			    }
+		    }
+	    }
+	    return  false;
+	}
 }
+	
+

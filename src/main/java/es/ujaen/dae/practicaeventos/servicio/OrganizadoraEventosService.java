@@ -14,10 +14,16 @@ public interface OrganizadoraEventosService {
 	public void obtenerEventos();
 	
 	/////////////////////////
-	public String registrarUsuario(UsuarioDTO usuarioDTO);
+	public String registrarUsuario(UsuarioDTO usuarioDTO, String password);
 	public long identificarUsuario(String dni, String password);
 	public String crearEvento(EventoDTO eventoDTO, long token);
+	public String inscribirEvento(EventoDTO eventoDTO, long token);
+	public String cancelarInscripcion(EventoDTO eventoDTO, long token);
 	public List<EventoDTO> buscarEvento(String attr);
-	public void cancelarEvento(String id,long token);
-	//public void inscribirAEvento(String id,long token);
+	public String cancelarEvento(EventoDTO eventoDTO,long token);
+	public List<EventoDTO> listarEventoInscritoCelebrado(long token);
+	public List<EventoDTO> listarEventoInscritoPorCelebrar(long token);
+	public List<EventoDTO> listarEventoEsperaPorCelebrar(long token);
+	public List<EventoDTO> listarEventoOrganizadoCelebrado(long token);
+	public List<EventoDTO> listarEventoOrganizadoPorCelebrar(long token);
 }
