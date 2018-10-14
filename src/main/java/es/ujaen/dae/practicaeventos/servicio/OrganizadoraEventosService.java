@@ -19,9 +19,9 @@ public interface OrganizadoraEventosService {
 	public String cerrarSesion(long token);//Probado
 	public String crearEvento(EventoDTO eventoDTO, long token);//Probado
 	public String inscribirEvento(EventoDTO eventoDTO, long token);//Probado
-	public String cancelarInscripcion(EventoDTO eventoDTO, long token);//PROBANDO
+	public String cancelarInscripcion(EventoDTO eventoDTO, long token);//Probado
 	public List<EventoDTO> buscarEvento(String attr);//Probado
-	public String cancelarEvento(EventoDTO eventoDTO,long token);
+	public String cancelarEvento(EventoDTO eventoDTO,long token);//Probado
 	public List<EventoDTO> listarEventoInscritoCelebrado(long token);//Probado
 	public List<EventoDTO> listarEventoInscritoPorCelebrar(long token);//Probado
 	public List<EventoDTO> listarEventoEsperaPorCelebrar(long token); //Probado
