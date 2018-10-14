@@ -62,7 +62,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		String mensaje = "";
 		Usuario usuario = usuarioDTO.toEntity();
 		if(usuario.getDni()!=null&&password!=null&&usuario.getNombre()!=null) {
-			mensaje = "Usuario registrado";
+			mensaje = "Usuario registrado exitosamente";
 			usuario.setPassword(password);
 			usuarios.put(usuario.getDni(), usuario);
 		}else
@@ -73,7 +73,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 	public long identificarUsuario(String dni, String password) {
 		Usuario usuario;
 		long respuesta = 0;
-		if(dni!=null&&password!=null) {
+		if(!dni.isEmpty()&&!password.isEmpty()) {
 			if(usuarios.containsKey(dni)) {
 				usuario = usuarios.get(dni);
 				if ( usuario.getPassword() == password) {
@@ -87,8 +87,13 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 				respuesta = 1; //no registrado
 			}
 		}else {
-			respuesta = 0;//no ingreso datos
+			respuesta = 0;//campos vacíos
 		}return respuesta;
+	}
+	
+	public String cerrarSesion(long token) {
+		usuariosTokens.remove(token);
+		return "Se ha cerrado sesion exitosamente";
 	}
 	
 	public String crearEvento(EventoDTO eventoDTO, long token) {
@@ -96,19 +101,15 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		String mensaje = "";
 		if(validarToken(token)) {
 			evento.setOrganizador(usuarios.get(usuariosTokens.get(token)));
-			if(evento.getId()!=0&&evento.getNombre()!=null&&evento.getDescripcion()!=null&&evento.getFecha()!=null&&evento.getLugar()!=null&&evento.getCupo()!=0) {
+			if(evento.getId()!=0&&evento.getNombre()!=null&&!evento.getNombre().isEmpty()&&evento.getDescripcion()!=null&&!evento.getDescripcion().isEmpty()&&evento.getFecha()!=null&&!evento.getFecha().isEmpty()&&evento.getLugar()!=null&&!evento.getLugar().isEmpty()&&evento.getCupo()!=0) {
 				eventos.put(evento.getId(), evento);
-				
-				System.out.println(usuarios.get(usuariosTokens.get(token)).getDni());
 				usuarios.get(usuariosTokens.get(token)).eventosOrganizados.put(evento.getId(), evento);
-				//System.out.println("ORGANIZADOR "+usuario);
-				
 				mensaje = "Evento creado";
 			}else {
-				mensaje = "Campos incompletos";
+				mensaje = "No se ha creado el evento. El ID, nombre, descripcion, fecha, lugar y cupo son campos obligatorios.";
 			}
 		}else {
-			mensaje = "Debe iniciar sesión";
+			mensaje = "Debe iniciar sesión para crear un evento";
 		}
 		return mensaje;
 	}
@@ -120,21 +121,28 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 			Evento evento = eventoDTO.toEntity();
 			evento = eventos.get(evento.getId());
 			
-			if(evento.listaInvitados.size()<evento.getCupo()) {
-				evento.listaInvitados.put(usuariosTokens.get(token),usuarios.get(usuariosTokens.get(token)) );
-				
-				usuarios.get(usuariosTokens.get(token)).eventosInvitado.put(evento.getId(), evento);
+			if(evento.validarFecha()) {
+				if(evento.listaInvitados.get(usuariosTokens.get(token))==null) {
+					if(evento.listaInvitados.size()<evento.getCupo()) {
+						evento.listaInvitados.put(usuariosTokens.get(token),usuarios.get(usuariosTokens.get(token)) );
+						usuarios.get(usuariosTokens.get(token)).eventosInvitado.put(evento.getId(), evento);
 
-				mensaje = "Te has inscrito exitosamente";
+						mensaje = "Te has inscrito exitosamente al evento";
+					}else {
+						evento.listaEspera.add(usuarios.get(usuariosTokens.get(token)) );
+						usuarios.get(usuariosTokens.get(token)).eventosEspera.put(evento.getId(), evento);
+
+						mensaje = "Estas en lista de espera";
+					}
+				}else {
+					mensaje = "Ya tienes un registro asociado a este evento";
+				}
 			}else {
-				evento.listaEspera.add(usuarios.get(usuariosTokens.get(token)) );
-				usuarios.get(usuariosTokens.get(token)).eventosEspera.put(evento.getId(), evento);
-
-				mensaje = "Estas en lista de espera";
+				mensaje = "No puedes inscribirte a un evento que ya ha sido celebrado";
 			}
 			
 		}else{
-			mensaje = "Debe iniciar sesión";
+			mensaje = "Debes iniciar sesión para inscribirte a un evento";
 		}
 		return mensaje;
 	}
@@ -150,7 +158,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 				evento.listaInvitados.remove(usuariosTokens.get(token));
 				evento.listaInvitados.put(evento.listaEspera.get(0).getDni(), evento.listaEspera.get(0));
 				
-				usuarios.get(usuariosTokens.get(token)).eventosInvitado.remove(evento);
+				usuarios.get(usuariosTokens.get(token)).eventosInvitado.remove(evento.getId());
 				usuarios.get(evento.listaEspera.get(0).getDni()).eventosInvitado.put(evento.getId(), evento);
 				usuarios.get(evento.listaEspera.get(0).getDni()).eventosEspera.remove(evento.getId(), evento);
 
@@ -170,7 +178,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		ArrayList<EventoDTO> eventosBuscados = new ArrayList<>();
 		
 		for(Evento evento : eventos.values()) {
-			if(evento.getTipo().toLowerCase().equals(attr)||evento.getDescripcion().toLowerCase().contains(attr.toLowerCase()))
+			if(evento.getTipo().toLowerCase().equals(attr.toLowerCase())||evento.getDescripcion().toLowerCase().contains(attr.toLowerCase()))
 				eventosBuscados.add(new EventoDTO(evento));
 		}return eventosBuscados;
 	}
@@ -179,11 +187,16 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		String mensaje = "";
 		Evento evento = eventoDTO.toEntity();
 		if(validarToken(token)) {
-			if(evento.getOrganizador().getDni().equals(usuariosTokens.get(token))) {
+			if(eventos.get(evento.getId()).getOrganizador().getDni().equals(usuariosTokens.get(token))) {
 				eventos.remove(evento.getId());
+				mensaje = "Evento cancelado";
+			}else {
+				mensaje = "No eres el organizador del evento, no puedes cancelarlo";
 			}
+		}else {
+			mensaje = "Debes iniciar sesion para cancelar un evento";
 		}
-		return "";
+		return mensaje;
 	}
 	
 	public List<EventoDTO> listarEventoInscritoCelebrado(long token) {
@@ -251,18 +264,18 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		return eventosOrganizadosPorCelebrar;
 	}
 
-	public void obtenerUsuarios() {
-		for(Usuario usuario : usuarios.values()) {
-			System.out.println(usuario.toString());
-		}
-	}
-	
-	public void obtenerEventos() {
-		for(Evento evento : eventos.values()) {
-		//	System.out.println(evento.getOrganizador());
-			System.out.println(evento.toString());
-		}
-	}
+//	public void obtenerUsuarios() {
+//		for(Usuario usuario : usuarios.values()) {
+//			System.out.println(usuario.toString());
+//		}
+//	}
+//	
+//	public void obtenerEventos() {
+//		for(Evento evento : eventos.values()) {
+//		//	System.out.println(evento.getOrganizador());
+//			System.out.println(evento.toString());
+//		}
+//	}
 	
 	private long generarToken() {
 		Long tok;

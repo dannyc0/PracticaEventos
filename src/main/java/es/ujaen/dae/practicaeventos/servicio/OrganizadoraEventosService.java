@@ -10,20 +10,40 @@ import es.ujaen.dae.practicaeventos.dto.UsuarioDTO;
 public interface OrganizadoraEventosService {
 	
 	//mostrar usuarios
-	public void obtenerUsuarios();
-	public void obtenerEventos();
+	//public void obtenerUsuarios();
+	//public void obtenerEventos();
 	
 	/////////////////////////
-	public String registrarUsuario(UsuarioDTO usuarioDTO, String password);
-	public long identificarUsuario(String dni, String password);
-	public String crearEvento(EventoDTO eventoDTO, long token);
-	public String inscribirEvento(EventoDTO eventoDTO, long token);
-	public String cancelarInscripcion(EventoDTO eventoDTO, long token);
-	public List<EventoDTO> buscarEvento(String attr);
+	public String registrarUsuario(UsuarioDTO usuarioDTO, String password);//Probado
+	public long identificarUsuario(String dni, String password);//Probado
+	public String cerrarSesion(long token);//Probado
+	public String crearEvento(EventoDTO eventoDTO, long token);//Probado
+	public String inscribirEvento(EventoDTO eventoDTO, long token);//Probado
+	public String cancelarInscripcion(EventoDTO eventoDTO, long token);//PROBANDO
+	public List<EventoDTO> buscarEvento(String attr);//Probado
 	public String cancelarEvento(EventoDTO eventoDTO,long token);
-	public List<EventoDTO> listarEventoInscritoCelebrado(long token);
-	public List<EventoDTO> listarEventoInscritoPorCelebrar(long token);
-	public List<EventoDTO> listarEventoEsperaPorCelebrar(long token);
-	public List<EventoDTO> listarEventoOrganizadoCelebrado(long token);
-	public List<EventoDTO> listarEventoOrganizadoPorCelebrar(long token);
+	public List<EventoDTO> listarEventoInscritoCelebrado(long token);//Probado
+	public List<EventoDTO> listarEventoInscritoPorCelebrar(long token);//Probado
+	public List<EventoDTO> listarEventoEsperaPorCelebrar(long token); //Probado
+	public List<EventoDTO> listarEventoOrganizadoCelebrado(long token);//Probado
+	public List<EventoDTO> listarEventoOrganizadoPorCelebrar(long token);//Probado
+	
+	/*
+	 * Corregido:
+	 * El metodo validar fecha no funcionaba correctamente, la lógica estaba mal
+	 * Cancelar inscripcion no quitaba el evento de la lista contenida en usuario
+	 * Cancelar evento no estaba definido correctamente
+	 * 
+	 * Añadido:
+	 * No existia cerrar sesion
+	 * Para cancelar inscripcion, no tiene que haberse celebrado aun
+	 * Para cancelar evento, no tiene que haberse celebrado aun
+	 * Para inscribirse, no tiene que haberse celebrado aun
+	 * Para inscribirse, no tiene que estar inscrito previamente
+	 * 
+	 * Preguntar al profesor:
+	 * Si el id del evento lo ingresa el cliente
+	 * Si la lista de espera en eventos ya celebrados no deberia existir
+	 * 
+	 * */
 }

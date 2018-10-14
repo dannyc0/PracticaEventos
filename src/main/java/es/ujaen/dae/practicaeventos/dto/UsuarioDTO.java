@@ -11,11 +11,7 @@ public class UsuarioDTO {
 	String correo;
 	String telefono;
 	
-	public UsuarioDTO() {
-		
-	}
-
-
+	public UsuarioDTO() {}
 	
 	public UsuarioDTO(String dni, String nombre, String correo, String telefono) {
 		this.dni = dni;

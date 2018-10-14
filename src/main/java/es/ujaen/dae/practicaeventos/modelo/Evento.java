@@ -105,16 +105,21 @@ public class Evento {
 	public boolean validarFecha() {
 	    LocalDate hoy = LocalDate.now();
 	    String[] fechaEvento = getFecha().split("-");
+	    
 	    String format = hoy +"";
 	    String fechaActual[]=format.split("-");
-	    if(Integer.parseInt(fechaEvento[0])<Integer.parseInt(fechaActual[2])) {
-		    if(Integer.parseInt(fechaEvento[1])<Integer.parseInt(fechaActual[1])) {
-			    if(Integer.parseInt(fechaEvento[2])<Integer.parseInt(fechaActual[0])) {
+	    
+	    if(Integer.parseInt(fechaEvento[2])>Integer.parseInt(fechaActual[0])) {
+	    	return true;
+	    }else if(Integer.parseInt(fechaEvento[2])==Integer.parseInt(fechaActual[0])) {
+	    	if(Integer.parseInt(fechaEvento[1])>Integer.parseInt(fechaActual[1])) {
+			    return true;
+		    }else if(Integer.parseInt(fechaEvento[1])==Integer.parseInt(fechaActual[1])) {
+		    	if(Integer.parseInt(fechaEvento[0])>Integer.parseInt(fechaActual[2])) {
 			    	return true;			    	
 			    }
 		    }
-	    }
-	    return  false;
+	    }return false;
 	}
 }
 	
