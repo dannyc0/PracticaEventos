@@ -366,6 +366,20 @@ public class ClienteOrganizadoraEventos {
 			System.out.println("TOKEN: "+token);
 			System.out.println(organizadoraEventos.cancelarEvento(cancelarEvento, token));
 			
+			
+			//Comprobar que el evento ya no aparezca ni en la lista de usuarios ni en la lista de eventos
+			eventosBuscados =  organizadoraEventos.buscarEvento("Fiesta infantil");
+
+			System.out.println("\nBusqueda por tipo");
+			for (EventoDTO eventoDTO : eventosBuscados) {
+				System.out.println("ID: "+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+			}
+			eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
+			System.out.println("\nEventos organizados por celebrar");
+			for (EventoDTO eventoDTO : eventosBuscados) {
+				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+			}
+			
 		}
 		
 		//organizadoraEventos.obtenerUsuarios();

@@ -189,6 +189,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			if(eventos.get(evento.getId()).getOrganizador().getDni().equals(usuariosTokens.get(token))) {
 				eventos.remove(evento.getId());
+				usuarios.get(usuariosTokens.get(token)).eventosOrganizados.remove(evento.getId());
 				mensaje = "Evento cancelado";
 			}else {
 				mensaje = "No eres el organizador del evento, no puedes cancelarlo";
@@ -263,19 +264,6 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		}
 		return eventosOrganizadosPorCelebrar;
 	}
-
-//	public void obtenerUsuarios() {
-//		for(Usuario usuario : usuarios.values()) {
-//			System.out.println(usuario.toString());
-//		}
-//	}
-//	
-//	public void obtenerEventos() {
-//		for(Evento evento : eventos.values()) {
-//		//	System.out.println(evento.getOrganizador());
-//			System.out.println(evento.toString());
-//		}
-//	}
 	
 	private long generarToken() {
 		Long tok;
