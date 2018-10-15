@@ -61,7 +61,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 	public String registrarUsuario(UsuarioDTO usuarioDTO, String password) {
 		String mensaje = "";
 		Usuario usuario = usuarioDTO.toEntity();
-		if(usuario.getDni()!=null&&password!=null&&usuario.getNombre()!=null) {
+		if(usuario.getDni()!=null&&!usuario.getDni().isEmpty()&&password!=null&&!password.isEmpty()&&usuario.getNombre()!=null&&!usuario.getNombre().isEmpty()) {
 			mensaje = "Usuario registrado exitosamente";
 			usuario.setPassword(password);
 			usuarios.put(usuario.getDni(), usuario);
@@ -76,7 +76,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(!dni.isEmpty()&&!password.isEmpty()) {
 			if(usuarios.containsKey(dni)) {
 				usuario = usuarios.get(dni);
-				if ( usuario.getPassword() == password) {
+				if ( usuario.getPassword().equals(password)) {
 					 token = generarToken();
 					 respuesta = token;
 					 usuariosTokens.put(token, dni);
@@ -91,9 +91,11 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		}return respuesta;
 	}
 	
-	public String cerrarSesion(long token) {
-		usuariosTokens.remove(token);
-		return "Se ha cerrado sesion exitosamente";
+	public boolean cerrarSesion(long token) {
+		if (usuariosTokens.remove(token)!=null) {
+			return true;
+		}
+		return false;
 	}
 	
 	public String crearEvento(EventoDTO eventoDTO, long token) {
@@ -121,7 +123,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 			Evento evento = eventoDTO.toEntity();
 			evento = eventos.get(evento.getId());
 			
-			if(evento.validarFecha()) {
+			if(eventos.get(evento.getId()).compararConFechaActual()) {
 				if(evento.listaInvitados.get(usuariosTokens.get(token))==null) {
 					if(evento.listaInvitados.size()<evento.getCupo()) {
 						evento.listaInvitados.put(usuariosTokens.get(token),usuarios.get(usuariosTokens.get(token)) );
@@ -155,16 +157,20 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 			evento = eventos.get(evento.getId());
 			
 			if(evento.listaInvitados.containsKey(usuariosTokens.get(token))) {
-				evento.listaInvitados.remove(usuariosTokens.get(token));
-				evento.listaInvitados.put(evento.listaEspera.get(0).getDni(), evento.listaEspera.get(0));
-				
-				usuarios.get(usuariosTokens.get(token)).eventosInvitado.remove(evento.getId());
-				usuarios.get(evento.listaEspera.get(0).getDni()).eventosInvitado.put(evento.getId(), evento);
-				usuarios.get(evento.listaEspera.get(0).getDni()).eventosEspera.remove(evento.getId(), evento);
+				if(eventos.get(evento.getId()).compararConFechaActual()) {
+					evento.listaInvitados.remove(usuariosTokens.get(token));
+					evento.listaInvitados.put(evento.listaEspera.get(0).getDni(), evento.listaEspera.get(0));
+					
+					usuarios.get(usuariosTokens.get(token)).eventosInvitado.remove(evento.getId());
+					usuarios.get(evento.listaEspera.get(0).getDni()).eventosInvitado.put(evento.getId(), evento);
+					usuarios.get(evento.listaEspera.get(0).getDni()).eventosEspera.remove(evento.getId(), evento);
 
-				evento.listaEspera.remove(0);
-				
-				mensaje = "Has cancelado tu inscripcion exitosamente";
+					evento.listaEspera.remove(0);
+					
+					mensaje = "Has cancelado tu inscripcion exitosamente";
+				}else {
+					mensaje = "No puedes cancelar la inscripción de un evento ya celebrado";
+				}
 			}else {
 				mensaje = "No estas en la lista de invitados de este evento";
 			}
@@ -187,12 +193,16 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		String mensaje = "";
 		Evento evento = eventoDTO.toEntity();
 		if(validarToken(token)) {
-			if(eventos.get(evento.getId()).getOrganizador().getDni().equals(usuariosTokens.get(token))) {
-				eventos.remove(evento.getId());
-				usuarios.get(usuariosTokens.get(token)).eventosOrganizados.remove(evento.getId());
-				mensaje = "Evento cancelado";
+			if(eventos.get(evento.getId()).compararConFechaActual()) {
+				if(eventos.get(evento.getId()).getOrganizador().getDni().equals(usuariosTokens.get(token))) {
+					eventos.remove(evento.getId());
+					usuarios.get(usuariosTokens.get(token)).eventosOrganizados.remove(evento.getId());
+					mensaje = "Evento cancelado";
+				}else {
+					mensaje = "No eres el organizador del evento, no puedes cancelarlo";
+				}
 			}else {
-				mensaje = "No eres el organizador del evento, no puedes cancelarlo";
+				mensaje = "No puedes cancelar un evento que ya se celebró";
 			}
 		}else {
 			mensaje = "Debes iniciar sesion para cancelar un evento";
@@ -205,7 +215,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			Usuario usuario= usuarios.get(usuariosTokens.get(token));
 			for (Evento evento : usuario.eventosInvitado.values()) {
-				if(!evento.validarFecha()) {
+				if(!evento.compararConFechaActual()) {
 					eventosInscritosCelebrados.add(new EventoDTO(evento));
 				}
 			}
@@ -218,7 +228,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			Usuario usuario= usuarios.get(usuariosTokens.get(token));
 			for (Evento evento : usuario.eventosInvitado.values()) {
-				if(evento.validarFecha()) {
+				if(evento.compararConFechaActual()) {
 					eventosInscritosPorCelebrar.add(new EventoDTO(evento));
 				}
 			}
@@ -231,12 +241,25 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			Usuario usuario= usuarios.get(usuariosTokens.get(token));
 			for (Evento evento : usuario.eventosEspera.values()) {
-				if(evento.validarFecha()) {
+				if(evento.compararConFechaActual()) {
 					eventosEsperaPorCelebrar.add(new EventoDTO(evento));
 				}
 			}
 		}
 		return eventosEsperaPorCelebrar;
+	}
+	
+	public List<EventoDTO> listarEventoEsperaCelebrado(long token) {
+		List<EventoDTO> eventosEsperaCelebrado = new ArrayList<EventoDTO>(); 
+		if(validarToken(token)) {
+			Usuario usuario= usuarios.get(usuariosTokens.get(token));
+			for (Evento evento : usuario.eventosEspera.values()) {
+				if(!evento.compararConFechaActual()) {
+					eventosEsperaCelebrado.add(new EventoDTO(evento));
+				}
+			}
+		}
+		return eventosEsperaCelebrado;
 	}
 
 	public List<EventoDTO> listarEventoOrganizadoCelebrado(long token) {
@@ -244,7 +267,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			Usuario usuario= usuarios.get(usuariosTokens.get(token));
 			for (Evento evento : usuario.eventosOrganizados.values()) {
-				if(!evento.validarFecha()) {
+				if(!evento.compararConFechaActual()) {
 					eventosOrganizadosCelebrados.add(new EventoDTO(evento));
 				}
 			}
@@ -257,7 +280,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		if(validarToken(token)) {
 			Usuario usuario= usuarios.get(usuariosTokens.get(token));
 			for (Evento evento : usuario.eventosOrganizados.values()) {
-				if(evento.validarFecha()) {
+				if(evento.compararConFechaActual()) {
 					eventosOrganizadosPorCelebrar.add(new EventoDTO(evento));
 				}
 			}

@@ -102,7 +102,7 @@ public class Evento {
 				+ ", listaEspera=" + listaEspera + ", listaInvitados=" + listaInvitados + "]";
 	}
 
-	public boolean validarFecha() {
+	public boolean compararConFechaActual() {
 	    LocalDate hoy = LocalDate.now();
 	    String[] fechaEvento = getFecha().split("-");
 	    

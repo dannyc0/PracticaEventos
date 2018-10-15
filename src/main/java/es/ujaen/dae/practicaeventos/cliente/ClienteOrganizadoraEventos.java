@@ -1,5 +1,8 @@
 package es.ujaen.dae.practicaeventos.cliente;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -9,7 +12,6 @@ import org.springframework.context.ApplicationContext;
 import es.ujaen.dae.practicaeventos.bean.OrganizadoraEventosImp;
 import es.ujaen.dae.practicaeventos.dto.EventoDTO;
 import es.ujaen.dae.practicaeventos.dto.UsuarioDTO;
-import es.ujaen.dae.practicaeventos.modelo.Usuario;
 import es.ujaen.dae.practicaeventos.servicio.OrganizadoraEventosService;
 
 public class ClienteOrganizadoraEventos {
@@ -19,374 +21,247 @@ public class ClienteOrganizadoraEventos {
 		this.ctx = context;
 	}
 	
-	public void run() {
+	public void run() throws IOException {
 		OrganizadoraEventosService organizadoraEventos = (OrganizadoraEventosService) ctx.getBean("organizadoraEventosImp");
-		Scanner sc = new Scanner(System.in);
+		
+		BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+
 		Interfaz interfaz = new Interfaz();
 		int opcion;
+		int flag=0;
+		boolean sesionIniciada = false;
 		
 		System.out.println("**Organizadora de eventos**");
-		interfaz.imprimirOpciones("principal-no-loggeado");
+		do {
+			interfaz.imprimirOpciones("menu-principal");
+			System.out.print("Ingrese el número de su elección: ");
+			opcion = Integer.parseInt(bf.readLine());
+			
+			if(opcion==1) {//Registrarse
+				UsuarioDTO usuarioDTO = new UsuarioDTO();
+				System.out.println("\nComplete los siguientes campos");
+				System.out.print("Ingrese su DNI: ");
+				usuarioDTO.setDni(bf.readLine());
+				System.out.print("Ingrese su nombre completo: ");
+				usuarioDTO.setNombre(bf.readLine());
+				System.out.print("Ingrese su correo electrónico: ");
+				usuarioDTO.setCorreo(bf.readLine());
+				System.out.print("Ingrese su número de telefono: ");
+				usuarioDTO.setTelefono(bf.readLine());
+				System.out.print("Ingrese su contraseña: ");
+				System.out.println("\n "+organizadoraEventos.registrarUsuario(usuarioDTO, bf.readLine()));
+			}else if(opcion==2) {//Iniciar sesión
+//				if (sesionIniciada) {
+//					System.out.println("\nDebe cerrar su actual sesión primero");
+//				}else {
+					System.out.print("Ingrese DNI: ");
+					String dni=bf.readLine();
+					System.out.print("Ingrese password: ");
+					String respuesta=organizadoraEventos.identificarUsuario(dni, bf.readLine())+"";
+					if(respuesta.equals("2")) {
+						System.out.println("\nContraseña incorrecta");
+					}else if(respuesta.equals("1")) {
+						System.out.println("\nUsuario no registrado");
+					}else if(respuesta.equals("0")) {
+						System.out.println("\nCampos incompletos");
+					}else {
+						System.out.println("\nSe inició sesión correctamente \n Su TOKEN de seguridad es :"+respuesta);
+//						sesionIniciada=true;
+					}
+//				}
+			}else if(opcion==3) {//Eventos
+				do {
+					flag = 1;
+					interfaz.imprimirOpciones("menu-eventos");
+					System.out.print("Ingrese el número de su elección: ");
+					opcion = Integer.parseInt(bf.readLine());
+					
+					if(opcion==1){//Buscar evento
+						System.out.print("Ingrese tipo de evento o palabra clave de la descripción: ");
+						String busqueda=bf.readLine();
+						List<EventoDTO> eventosBuscados =  organizadoraEventos.buscarEvento(busqueda);
+						
+						System.out.println("\nResultados de la búsqueda");
+						for (EventoDTO eventoDTO : eventosBuscados) {
+							System.out.println("ID: " + eventoDTO.getId() + "  " + eventoDTO.getNombre());
+						}
+						
+						System.out.print("¿Desea inscribirse a algún evento de la lista? Si es así, introduzca el ID del evento, "
+								+ "si no, introduzca 0 para regresar al menú anterior: ");
+						int inscribirse=Integer.parseInt(bf.readLine());
+						
+						if(inscribirse!=0){//Inscribirse a evento
+							System.out.print("Ingrese TOKEN de seguridad ");
+							Long token=Long.parseLong(bf.readLine());
+							
+							EventoDTO eventoInscribir = new EventoDTO();
+							eventoInscribir.setId(inscribirse);
+							
+							System.out.println("\n "+organizadoraEventos.inscribirEvento(eventoInscribir, token));
+						}
+					}else if(opcion==2) {//Crear evento
+						EventoDTO eventoDTO = new EventoDTO();
+						//ID, nombre, descripcion, fecha, lugar, tipo y cupo son campos obligatorios
+						
+						System.out.println("\nComplete los siguientes campos");
+						System.out.print("Ingrese el ID del evento: ");
+						eventoDTO.setId((Integer.parseInt(bf.readLine())));
+						System.out.print("Ingrese el nombre del evento: ");
+						eventoDTO.setNombre(bf.readLine());
+						System.out.print("Ingrese la descripción del evento: ");
+						eventoDTO.setDescripcion(bf.readLine());
+						System.out.print("Ingrese la fecha de celebración del evento (dd-mm-aaaa): ");
+						eventoDTO.setFecha(bf.readLine());
+						System.out.print("Ingrese el lugar donde se llevará a cabo el evento: ");
+						eventoDTO.setLugar(bf.readLine());
+						System.out.print("Ingrese el tipo de evento: ");
+						eventoDTO.setTipo(bf.readLine());
+						System.out.print("Ingrese el cupo del evento: ");
+						eventoDTO.setCupo(Integer.parseInt(bf.readLine()));
+						System.out.print("Ingrese TOKEN de seguridad: ");
+						Long token=Long.parseLong(bf.readLine());
+						
+						System.out.println("\n "+organizadoraEventos.crearEvento(eventoDTO, token));
+					}else if(opcion==3) {//Listar eventos organizados
+						interfaz.imprimirOpciones("menu-listas");
+						System.out.print("Ingrese el número de su elección: ");
+						opcion = Integer.parseInt(bf.readLine());
+						
+						if(opcion==1) {//Por celebrar
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
+							System.out.println("\nEventos organizados por celebrar");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+							
+							System.out.print("¿Desea cancelar algún evento de la lista? Si es así, introduzca el ID del evento, "
+									+ "si no, introduzca 0 para regresar al menú anterior: ");
+							int cancelar=Integer.parseInt(bf.readLine());
+							
+							if(cancelar!=0){//Cancelar evento
+								System.out.print("Ingrese TOKEN de seguridad: ");
+								Long token2=Long.parseLong(bf.readLine());
+								
+								EventoDTO eventoCancelar = new EventoDTO();
+								eventoCancelar.setId(cancelar);
+								
+								System.out.println("\n"+organizadoraEventos.cancelarEvento(eventoCancelar, token2));
+							}
+						}else if (opcion==2) {//Celebrado
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(token);
+							System.out.println("\nEventos organizados celebrado");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+						}
+					}else if(opcion==4) {//Listar eventos inscritos
+						interfaz.imprimirOpciones("menu-listas");
+						System.out.print("Ingrese el número de su elección: ");
+						opcion = Integer.parseInt(bf.readLine());
+						
+						if(opcion==1) {//Por celebrar
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoInscritoPorCelebrar(token);
+							System.out.println("\nEventos inscrito por celebrar");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+							
+							System.out.print("¿Desea cancelar la inscripción a un evento de la lista? Si es así, introduzca el ID del evento, "
+									+ "si no, introduzca 0 para regresar al menú anterior: ");
+							int cancelar=Integer.parseInt(bf.readLine());
+							
+							if(cancelar!=0){//Cancelar inscripcion
+								System.out.print("Ingrese TOKEN de seguridad: ");
+								Long token2=Long.parseLong(bf.readLine());
+								
+								EventoDTO eventoCancelar = new EventoDTO();
+								eventoCancelar.setId(cancelar);
+								
+								System.out.println("\n"+organizadoraEventos.cancelarInscripcion(eventoCancelar, token2));
+							}
+						}else if (opcion==2) {//Celebrado
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoInscritoCelebrado(token);
+							System.out.println("\nEventos inscritos celebrado");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+						}
+					}else if(opcion==5) {//Listar eventos en espera
+						interfaz.imprimirOpciones("menu-listas");
+						System.out.print("Ingrese el número de su elección: ");
+						opcion = Integer.parseInt(bf.readLine());
+						
+						if(opcion==1) {//Por celebrar
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
+							System.out.println("\nEventos en espera por celebrar");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+							
+							System.out.print("¿Desea cancelar la inscripción de algún evento de la lista? Si es así, introduzca el ID del evento, "
+									+ "si no, introduzca 0 para regresar al menú anterior: ");
+							int cancelar=Integer.parseInt(bf.readLine());
+							
+							if(cancelar!=0){//Cancelar lista de espera
+								System.out.print("Ingrese TOKEN de seguridad: ");
+								Long token2=Long.parseLong(bf.readLine());
+								
+								EventoDTO eventoCancelar = new EventoDTO();
+								eventoCancelar.setId(cancelar);
+								
+								System.out.println("\n"+organizadoraEventos.cancelarInscripcion(eventoCancelar, token2));
+							}
+						}else if (opcion==2) {//Celebrado
+							List<EventoDTO> eventosBuscados =  new ArrayList<>();
+							System.out.print("Ingrese TOKEN de seguridad: ");
+							Long token=Long.parseLong(bf.readLine());
+							eventosBuscados = organizadoraEventos.listarEventoEsperaCelebrado(token);
+							System.out.println("\nEventos en espera celebrado");
+							for (EventoDTO eventoDTO : eventosBuscados) {
+								System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
+							}
+						}
+					}else if(opcion==6) {//Ir a menú principal
+						flag=0;
+					}
+					
+				} while (flag==1);
+			}else if(opcion==4) {//Cerrar sesión
+				System.out.print("Ingrese TOKEN de seguridad: ");
+				Long token=Long.parseLong(bf.readLine());
+				
+				if(organizadoraEventos.cerrarSesion(token)) {
+					System.out.println("\n "+"Sesión terminada. Hasta luego");
+					sesionIniciada=false;
+				}else {
+					System.out.println("\n "+"Token incorrecto");
+				}
+				
+				
+			}else if(opcion==5) {//Salir
+				System.out.println("Vuelva pronto");
+				flag=2;
+			}
+			
+		} while (flag==0);
 		
-		System.out.print("Ingrese el número de su elección: ");
-		while (!sc.hasNextInt()) sc.next();
-		opcion = sc.nextInt();
-		
-		if(opcion==1){
-			String dni = "13233232Q";
-			String password = "sfsdafe32";
-			String dni2 = "13298232Q";
-			String password2 = "sadafe32fff";
-			String dni3 = "13211232Q";
-			String password3 = "sadafe3asad2";
-			long token;
-			
-			///////////////////////////////////////////////////////////////////////////////////////////
-			
-			//***REGISTRAR USUARIO***
-			//Nota: Devuelve si se registro o no
-			
-			//Crea los objetos tipo UsuarioDTO inicializando los campos desde el constructor
-			UsuarioDTO usuario = new UsuarioDTO(dni,"Juan Perez","jhony@gmail.com","+521551591058");
-			UsuarioDTO usuario3 = new UsuarioDTO(dni3,"Luis Perez","jhony@gmail.com","+521551591058");
-			
-			//Con constructor vacío
-			UsuarioDTO usuario2 = new UsuarioDTO();
-			
-			//Establece el DNI al UsuarioDTO vacío
-			usuario2.setDni(dni2);
-			
-			//Imprime el resultado de registrar los usuarios
-			System.out.println(organizadoraEventos.registrarUsuario(usuario,password));
-			System.out.println(organizadoraEventos.registrarUsuario(usuario2,password2));//Error: faltan campos obligatorios
-			System.out.println(organizadoraEventos.registrarUsuario(usuario3,password3));
-			
-			///////////////////////////////////////////////////////////////////////////////////////////
-			
-			//***IDENTIFICACION***
-			//Nota: Devuelve el token al iniciar sesión
-			
-			//Identificaciones incorrectas
-			token = organizadoraEventos.identificarUsuario("", "");//Error: campos vacíos
-			System.out.println("TOKEN: "+token);
-			token = organizadoraEventos.identificarUsuario("dads3d", password);//Error: no registrado
-			System.out.println("TOKEN: "+token);
-			token = organizadoraEventos.identificarUsuario(dni, "aaaa");//Error: contraseña incorrecta
-			System.out.println("TOKEN: "+token);
-			
-			//Identificacion correcta
-			token = organizadoraEventos.identificarUsuario(dni, password);
-			System.out.println("TOKEN: "+token);
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-			
-			//***CREAR EVENTO***
-			//Nota: Devuelve si lo registra o no
-			
-			//Crea los objetos tipo EventoDTO inicializando los campos desde el constructor
-			EventoDTO evento = new EventoDTO(1,"Evento ya celebrado", "Descripción de este evento celebrado", "España", "10-05-2018", "Fiesta infantil", 2);
-			EventoDTO evento2 = new EventoDTO(2,"Evento por celebrar", "Descripción de este evento por celebrar", "España", "10-05-2019", "Fiesta infantil", 1);
-			
-			//Con constructor vacío
-			EventoDTO evento3 = new EventoDTO();
-			
-			//Establece algunos campos al EventoDTO vacío. El ID, nombre, descripcion, fecha, lugar y cupo son campos obligatorios
-			evento3.setId(8);
-			evento3.setNombre("Evento erroneo");
-			evento3.setDescripcion("");
-			evento3.setFecha("");
-			evento3.setLugar("");
-			evento3.setCupo(10);
-			
-			//Imprime el resultado de crear los eventos
-			
-			System.out.println(organizadoraEventos.crearEvento(evento, token)); //Correcto
-			System.out.println(organizadoraEventos.crearEvento(evento2, token)); //Correcto
-			System.out.println(organizadoraEventos.crearEvento(evento3, token)); //Error: campos incompletos
-			System.out.println(organizadoraEventos.crearEvento(evento, 552252)); //Error: token no registrado (no ha iniciado sesion)
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***BUSCAR EVENTO***
-			
-			//Busqueda por palabras clave en descripcion
-			List<EventoDTO> eventosBuscados =  organizadoraEventos.buscarEvento("celebrado");
-			//Imprime resultado
-			System.out.println("\nBusqueda por descripcion");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println(eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			//Busqueda por descripcion
-			eventosBuscados =  organizadoraEventos.buscarEvento("Fiesta infantil");
-			//Imprime resultado
-			System.out.println("\nBusqueda por tipo");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID: "+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***LISTAR EVENTOS ORGANIZADOS POR CELEBRAR***
-			//Nota: Estos son los que pueden ser cancelados
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
-			System.out.println("\nEventos organizados por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			//Token incorrecto
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(223432);
-			System.out.println("\nEventos organizados por celebrar de usuario inexistente");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////			
-			
-			//***LISTAR EVENTOS ORGANIZADOS CELEBRADOS***
-			//Nota: Estos ya no se pueden cancelar
-			eventosBuscados.clear();
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(token);
-			System.out.println("\nEventos organizados celebrados");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(52456222);
-			System.out.println("\nEventos organizados celebrados de un usuario inexistente\n");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***CERRAR SESION***
-			
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-						
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***INSCRIBIR A EVENTO***
-			//Nota: Crea DTO de evento de acuerdo a la busqueda realizada
-			//Inicia sesion con un usuario diferente al que creó el evento
-			token = organizadoraEventos.identificarUsuario(dni3, password3);
-			System.out.println("Sesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			
-			EventoDTO eventoInscribir = new EventoDTO();
-			eventoInscribir.setId(2);
-			
-			//Inscribir correctamente
-			System.out.println(organizadoraEventos.inscribirEvento(eventoInscribir, token));
-			
-			//Error: Inscribir de nuevo cuando ya esta inscrito
-			System.out.println(organizadoraEventos.inscribirEvento(eventoInscribir, token));
-			
-			//Error: Inscribir a un evento ya celebrado
-			eventoInscribir.setId(1);
-			System.out.println(organizadoraEventos.inscribirEvento(eventoInscribir, token));
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***LISTAR EVENTOS ORGANIZADOS POR CELEBRAR Y CELEBRADOS CUANDO EL USUARIO NO TIENE EVENTOS ORGANIZADOS***
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
-			System.out.println("\nEventos organizados por celebrar (no tiene)");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(token);
-			System.out.println("\nEventos organizados celebrados (no tiene)");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***LISTAR EVENTOS INSCRITO POR CELEBRAR Y CELEBRADOS***
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoInscritoPorCelebrar(token);
-			System.out.println("\nEventos inscritos por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(token);
-			System.out.println("\nEventos inscritos celebrados");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			//////////////////////////////////////////////////////////////////////////////////////////////
-			
-			//***INSCRIBIR DOS USUARIOS A EVENTO EN LISTA DE ESPERA***
-			UsuarioDTO usuarioEspera = new UsuarioDTO("52652020F","Juan Perez","jhony@gmail.com","+521551591058");
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-			System.out.println(organizadoraEventos.registrarUsuario(usuarioEspera,"12dasdas34"));
-			token = organizadoraEventos.identificarUsuario("52652020F", "12dasdas34");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			
-			//Manda a lista de espera
-			eventoInscribir.setId(2);
-			System.out.println(organizadoraEventos.inscribirEvento(eventoInscribir, token));
-			System.out.println("Usuario:"+"52652020F");
-			
-			usuarioEspera = new UsuarioDTO("22452523F","Juan Perez","jhony@gmail.com","+521551591058");
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-			System.out.println(organizadoraEventos.registrarUsuario(usuarioEspera,"1111"));
-			token = organizadoraEventos.identificarUsuario("22452523F", "1111");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			
-			eventoInscribir.setId(2);
-			System.out.println(organizadoraEventos.inscribirEvento(eventoInscribir, token));
-			System.out.println("Usuario:"+"22452523F");
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***LISTAR EVENTOS EN ESPERA POR CELEBRAR***
-			eventosBuscados.clear();
-			
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-			token = organizadoraEventos.identificarUsuario("52652020F", "12dasdas34");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			System.out.println("Usuario:"+"52652020F");
-			
-			eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
-			System.out.println("Eventos en espera por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			token = organizadoraEventos.identificarUsuario("22452523F", "1111");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			System.out.println("Usuario:"+"22452523F");
-			
-			eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
-			System.out.println("Eventos en espera por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			//////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***CANCELAR INSCRIPCION A EVENTO***
-			
-			//Inicia sesion con el usuario que se habia inscrito al evento
-			long tokenTemporal = token; //Simulando tener 2 sesiones al mismo tiempo
-			token = organizadoraEventos.identificarUsuario(dni3, password3);
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			
-			EventoDTO eventoCancelar = new EventoDTO();
-			eventoCancelar.setId(2);
-			//Probando que no se puedan cambiar estos valores
-			eventoCancelar.setCupo(200);
-			
-			//Error: Cancela inscripcion con usuario/token invalido
-			System.out.println(organizadoraEventos.cancelarInscripcion(eventoCancelar, 25222));
-			
-			//Error: Cancela inscripcion con usuario que no esta en lista de invitados
-			System.out.println(organizadoraEventos.cancelarInscripcion(eventoCancelar, tokenTemporal));
-			
-			//Cancela inscripcion un invitado
-			System.out.println(organizadoraEventos.cancelarInscripcion(eventoCancelar, token));
-			
-			//Comprobar que este usuario de espera ya salga como invitado
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-			token = organizadoraEventos.identificarUsuario("52652020F", "12dasdas34");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			System.out.println("Usuario:"+"52652020F");
-			
-			eventosBuscados.clear();
-			
-			eventosBuscados = organizadoraEventos.listarEventoInscritoPorCelebrar(token);
-			System.out.println("\nEventos inscritos por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			//Comprobar las listas de espera para ver que haya salido el usuario
-			eventosBuscados.clear();
-			eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
-			
-			System.out.println("Eventos en espera por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			eventosBuscados.clear();
-			
-			token = organizadoraEventos.identificarUsuario("22452523F", "1111");
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			System.out.println("Usuario:"+"22452523F");
-			
-			eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
-			System.out.println("Eventos en espera por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-			/////////////////////////////////////////////////////////////////////////////////////////////
-						
-			//***Cancelar evento***
-			EventoDTO cancelarEvento = new EventoDTO();
-			cancelarEvento.setId(2);
-			//Probando cancelar con el usuario actual, que no es el organizador del evento
-			System.out.println("TOKEN: "+token);
-			System.out.println(organizadoraEventos.cancelarEvento(cancelarEvento, token));
-			
-			//Cancelar evento con el usuario que si es el organizador
-			System.out.println(organizadoraEventos.cerrarSesion(token));
-			token = organizadoraEventos.identificarUsuario(dni, password);
-			System.out.println("\nSesion nueva con otro usuario");
-			System.out.println("TOKEN: "+token);
-			System.out.println(organizadoraEventos.cancelarEvento(cancelarEvento, token));
-			
-			
-			//Comprobar que el evento ya no aparezca ni en la lista de usuarios ni en la lista de eventos
-			eventosBuscados =  organizadoraEventos.buscarEvento("Fiesta infantil");
+		bf.close();
 
-			System.out.println("\nBusqueda por tipo");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID: "+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
-			System.out.println("\nEventos organizados por celebrar");
-			for (EventoDTO eventoDTO : eventosBuscados) {
-				System.out.println("ID:"+eventoDTO.getId()+"  "+eventoDTO.getNombre());
-			}
-			
-		}
-		
-		//organizadoraEventos.obtenerUsuarios();
-		//organizadoraEventos.obtenerEventos();
-//		
-		//System.out.println("Organizadora:"+organizadoraEventos.getCif());
-		//Logica y llamada de metodos
 	}
 
 }

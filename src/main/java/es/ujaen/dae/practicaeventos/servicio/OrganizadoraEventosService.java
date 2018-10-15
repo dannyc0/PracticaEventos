@@ -16,7 +16,7 @@ public interface OrganizadoraEventosService {
 	/////////////////////////
 	public String registrarUsuario(UsuarioDTO usuarioDTO, String password);//Probado
 	public long identificarUsuario(String dni, String password);//Probado
-	public String cerrarSesion(long token);//Probado
+	public boolean cerrarSesion(long token);//Probado
 	public String crearEvento(EventoDTO eventoDTO, long token);//Probado
 	public String inscribirEvento(EventoDTO eventoDTO, long token);//Probado
 	public String cancelarInscripcion(EventoDTO eventoDTO, long token);//Probado
@@ -25,6 +25,7 @@ public interface OrganizadoraEventosService {
 	public List<EventoDTO> listarEventoInscritoCelebrado(long token);//Probado
 	public List<EventoDTO> listarEventoInscritoPorCelebrar(long token);//Probado
 	public List<EventoDTO> listarEventoEsperaPorCelebrar(long token); //Probado
+	public List<EventoDTO> listarEventoEsperaCelebrado(long token); //Probado
 	public List<EventoDTO> listarEventoOrganizadoCelebrado(long token);//Probado
 	public List<EventoDTO> listarEventoOrganizadoPorCelebrar(long token);//Probado
 	
@@ -41,9 +42,13 @@ public interface OrganizadoraEventosService {
 	 * Para inscribirse, no tiene que haberse celebrado aun
 	 * Para inscribirse, no tiene que estar inscrito previamente
 	 * 
+	 * 
 	 * Preguntar al profesor:
+	 * Si el token debe ser solicitado al cliente cada vez que haga una transaccion o es interno
 	 * Si el id del evento lo ingresa el cliente
-	 * Si la lista de espera en eventos ya celebrados no deberia existir
+	 * Si solo puede haber una sesion abierta a la vez
+	 * Si el organizador puede inscribirse al evento que organizó
+	 * Si se debe validar por ejemplo DNI, fecha en formato correcto, etc
 	 * 
 	 * */
 }

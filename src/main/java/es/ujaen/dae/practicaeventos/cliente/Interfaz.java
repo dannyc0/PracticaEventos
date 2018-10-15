@@ -21,15 +21,26 @@ public class Interfaz {
 	}
 	
 	private void cargarOpciones(String tipo) {
-		if(tipo.equals("principal-no-loggeado")) {
+		if(tipo.equals("menu-principal")) {
 			opciones.clear();
 			opciones.put(1, "1. Registrarse");
 			opciones.put(2, "2. Iniciar sesión");
-			opciones.put(3, "2. Eventos");
-		}else if(tipo.equals("principal-loggeado")) {
+			opciones.put(3, "3. Eventos");
+			opciones.put(4, "4. Cerrar sesión");
+			opciones.put(5, "5. Salir");
+		}else if(tipo.equals("menu-eventos")) {
 			opciones.clear();
-			opciones.put(1, "1. Eventos");
-			opciones.put(2, "2. Cerrar sesión");
+			opciones.put(1, "1. Buscar evento");
+			opciones.put(2, "2. Crear Evento");
+			opciones.put(3, "3. Listar eventos organizados");
+			opciones.put(4, "4. Listar eventos inscritos");
+			opciones.put(5, "5. Listar eventos en espera");
+			opciones.put(6, "6. Menú principal");
+		}else if(tipo.equals("menu-listas")) {
+			opciones.clear();
+			opciones.put(1, "1. Por celebrar");
+			opciones.put(2, "2. Celebrado");
+			opciones.put(3, "3. Regresar");
 		}
 			
 	}
