@@ -33,14 +33,6 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 		eventos = new TreeMap<>();
 		usuariosTokens = new Hashtable<>();
 	}
-	
-//	public OrganizadoraEventosImp(String cif, String nombre, Map<String, Usuario> usuarios, Map<Integer, Evento> eventos) {
-//		this.cif = cif;
-//		this.nombre = nombre;
-//		this.usuarios = usuarios;
-//		this.eventos = eventos;
-//		
-//	}
 
 	public String getCif() {
 		return cif;
@@ -66,7 +58,7 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 			usuario.setPassword(password);
 			usuarios.put(usuario.getDni(), usuario);
 		}else
-			mensaje = "No se ha registrado el usuario. El DNI, nombre y password son campos obligatorios.";
+			mensaje = "No se ha registrado el usuario. El DNI, nombre y password son campos obligatorios.";		//throw new ExceptionCamposInvalidos();
 		return mensaje;
 	}
 	
@@ -101,9 +93,11 @@ public class OrganizadoraEventosImp implements OrganizadoraEventosService{
 	public String crearEvento(EventoDTO eventoDTO, long token) {
 		Evento evento = eventoDTO.toEntity();
 		String mensaje = "";
+		
 		if(validarToken(token)) {
 			evento.setOrganizador(usuarios.get(usuariosTokens.get(token)));
-			if(evento.getId()!=0&&evento.getNombre()!=null&&!evento.getNombre().isEmpty()&&evento.getDescripcion()!=null&&!evento.getDescripcion().isEmpty()&&evento.getFecha()!=null&&!evento.getFecha().isEmpty()&&evento.getLugar()!=null&&!evento.getLugar().isEmpty()&&evento.getCupo()!=0) {
+			if(evento.getNombre()!=null&&!evento.getNombre().isEmpty()&&evento.getDescripcion()!=null&&!evento.getDescripcion().isEmpty()&&evento.getFecha()!=null&&!evento.getFecha().isEmpty()&&evento.getLugar()!=null&&!evento.getLugar().isEmpty()&&evento.getCupo()!=0) {
+				evento.setId(eventos.size()+1);
 				eventos.put(evento.getId(), evento);
 				usuarios.get(usuariosTokens.get(token)).eventosOrganizados.put(evento.getId(), evento);
 				mensaje = "Evento creado";

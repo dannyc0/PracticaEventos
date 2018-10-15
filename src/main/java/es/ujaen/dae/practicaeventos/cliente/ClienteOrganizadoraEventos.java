@@ -30,6 +30,7 @@ public class ClienteOrganizadoraEventos {
 		int opcion;
 		int flag=0;
 		boolean sesionIniciada = false;
+		long token = 0;
 		
 		System.out.println("**Organizadora de eventos**");
 		do {
@@ -49,15 +50,23 @@ public class ClienteOrganizadoraEventos {
 				System.out.print("Ingrese su número de telefono: ");
 				usuarioDTO.setTelefono(bf.readLine());
 				System.out.print("Ingrese su contraseña: ");
-				System.out.println("\n "+organizadoraEventos.registrarUsuario(usuarioDTO, bf.readLine()));
+				try {
+					organizadoraEventos.registrarUsuario(usuarioDTO, bf.readLine());
+				} catch (Exception e) {
+					System.out.println("Faltan campos por llenar");
+				}
 			}else if(opcion==2) {//Iniciar sesión
-//				if (sesionIniciada) {
-//					System.out.println("\nDebe cerrar su actual sesión primero");
-//				}else {
+				if (sesionIniciada) {
+					System.out.println("\nDebe cerrar su actual sesión primero");
+				}else {
 					System.out.print("Ingrese DNI: ");
 					String dni=bf.readLine();
 					System.out.print("Ingrese password: ");
-					String respuesta=organizadoraEventos.identificarUsuario(dni, bf.readLine())+"";
+					String respuesta="";
+					try {
+						respuesta = organizadoraEventos.identificarUsuario(dni, bf.readLine())+"";
+					} catch (Exception e) {
+					}
 					if(respuesta.equals("2")) {
 						System.out.println("\nContraseña incorrecta");
 					}else if(respuesta.equals("1")) {
@@ -65,10 +74,11 @@ public class ClienteOrganizadoraEventos {
 					}else if(respuesta.equals("0")) {
 						System.out.println("\nCampos incompletos");
 					}else {
-						System.out.println("\nSe inició sesión correctamente \n Su TOKEN de seguridad es :"+respuesta);
-//						sesionIniciada=true;
+						System.out.println("\nSe inició sesión correctamente");
+						sesionIniciada=true;
+						token=Long.parseLong(respuesta);
 					}
-//				}
+				}
 			}else if(opcion==3) {//Eventos
 				do {
 					flag = 1;
@@ -91,21 +101,19 @@ public class ClienteOrganizadoraEventos {
 						int inscribirse=Integer.parseInt(bf.readLine());
 						
 						if(inscribirse!=0){//Inscribirse a evento
-							System.out.print("Ingrese TOKEN de seguridad ");
-							Long token=Long.parseLong(bf.readLine());
-							
 							EventoDTO eventoInscribir = new EventoDTO();
 							eventoInscribir.setId(inscribirse);
 							
-							System.out.println("\n "+organizadoraEventos.inscribirEvento(eventoInscribir, token));
+							try {
+								organizadoraEventos.inscribirEvento(eventoInscribir, token);
+							} catch (Exception e) {
+							}
 						}
 					}else if(opcion==2) {//Crear evento
 						EventoDTO eventoDTO = new EventoDTO();
 						//ID, nombre, descripcion, fecha, lugar, tipo y cupo son campos obligatorios
 						
 						System.out.println("\nComplete los siguientes campos");
-						System.out.print("Ingrese el ID del evento: ");
-						eventoDTO.setId((Integer.parseInt(bf.readLine())));
 						System.out.print("Ingrese el nombre del evento: ");
 						eventoDTO.setNombre(bf.readLine());
 						System.out.print("Ingrese la descripción del evento: ");
@@ -118,10 +126,13 @@ public class ClienteOrganizadoraEventos {
 						eventoDTO.setTipo(bf.readLine());
 						System.out.print("Ingrese el cupo del evento: ");
 						eventoDTO.setCupo(Integer.parseInt(bf.readLine()));
-						System.out.print("Ingrese TOKEN de seguridad: ");
-						Long token=Long.parseLong(bf.readLine());
 						
-						System.out.println("\n "+organizadoraEventos.crearEvento(eventoDTO, token));
+						try {
+							organizadoraEventos.crearEvento(eventoDTO, token);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}else if(opcion==3) {//Listar eventos organizados
 						interfaz.imprimirOpciones("menu-listas");
 						System.out.print("Ingrese el número de su elección: ");
@@ -129,8 +140,7 @@ public class ClienteOrganizadoraEventos {
 						
 						if(opcion==1) {//Por celebrar
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
+							
 							eventosBuscados = organizadoraEventos.listarEventoOrganizadoPorCelebrar(token);
 							System.out.println("\nEventos organizados por celebrar");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -148,12 +158,14 @@ public class ClienteOrganizadoraEventos {
 								EventoDTO eventoCancelar = new EventoDTO();
 								eventoCancelar.setId(cancelar);
 								
-								System.out.println("\n"+organizadoraEventos.cancelarEvento(eventoCancelar, token2));
+								try {
+									organizadoraEventos.cancelarEvento(eventoCancelar, token2);
+								} catch (Exception e) {
+								}
 							}
 						}else if (opcion==2) {//Celebrado
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
+
 							eventosBuscados = organizadoraEventos.listarEventoOrganizadoCelebrado(token);
 							System.out.println("\nEventos organizados celebrado");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -167,8 +179,6 @@ public class ClienteOrganizadoraEventos {
 						
 						if(opcion==1) {//Por celebrar
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
 							eventosBuscados = organizadoraEventos.listarEventoInscritoPorCelebrar(token);
 							System.out.println("\nEventos inscrito por celebrar");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -186,12 +196,12 @@ public class ClienteOrganizadoraEventos {
 								EventoDTO eventoCancelar = new EventoDTO();
 								eventoCancelar.setId(cancelar);
 								
-								System.out.println("\n"+organizadoraEventos.cancelarInscripcion(eventoCancelar, token2));
+								try {
+									organizadoraEventos.cancelarInscripcion(eventoCancelar, token2);
+								} catch (Exception e) {}
 							}
 						}else if (opcion==2) {//Celebrado
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
 							eventosBuscados = organizadoraEventos.listarEventoInscritoCelebrado(token);
 							System.out.println("\nEventos inscritos celebrado");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -205,8 +215,7 @@ public class ClienteOrganizadoraEventos {
 						
 						if(opcion==1) {//Por celebrar
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
+							
 							eventosBuscados = organizadoraEventos.listarEventoEsperaPorCelebrar(token);
 							System.out.println("\nEventos en espera por celebrar");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -218,18 +227,19 @@ public class ClienteOrganizadoraEventos {
 							int cancelar=Integer.parseInt(bf.readLine());
 							
 							if(cancelar!=0){//Cancelar lista de espera
-								System.out.print("Ingrese TOKEN de seguridad: ");
-								Long token2=Long.parseLong(bf.readLine());
 								
 								EventoDTO eventoCancelar = new EventoDTO();
 								eventoCancelar.setId(cancelar);
 								
-								System.out.println("\n"+organizadoraEventos.cancelarInscripcion(eventoCancelar, token2));
+								try {
+									organizadoraEventos.cancelarInscripcion(eventoCancelar, token);
+								} catch (Exception e) {
+
+								}
 							}
 						}else if (opcion==2) {//Celebrado
 							List<EventoDTO> eventosBuscados =  new ArrayList<>();
-							System.out.print("Ingrese TOKEN de seguridad: ");
-							Long token=Long.parseLong(bf.readLine());
+
 							eventosBuscados = organizadoraEventos.listarEventoEsperaCelebrado(token);
 							System.out.println("\nEventos en espera celebrado");
 							for (EventoDTO eventoDTO : eventosBuscados) {
@@ -242,8 +252,6 @@ public class ClienteOrganizadoraEventos {
 					
 				} while (flag==1);
 			}else if(opcion==4) {//Cerrar sesión
-				System.out.print("Ingrese TOKEN de seguridad: ");
-				Long token=Long.parseLong(bf.readLine());
 				
 				if(organizadoraEventos.cerrarSesion(token)) {
 					System.out.println("\n "+"Sesión terminada. Hasta luego");
@@ -251,7 +259,6 @@ public class ClienteOrganizadoraEventos {
 				}else {
 					System.out.println("\n "+"Token incorrecto");
 				}
-				
 				
 			}else if(opcion==5) {//Salir
 				System.out.println("Vuelva pronto");
